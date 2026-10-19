@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#155eef">
+  <title>ControlPYME — MVP interactivo</title>
+  <style>
+    :root{
+      --bg:#f5f7fb; --card:#ffffff; --text:#101828; --muted:#667085; --line:#e4e7ec;
+      --accent:#155eef; --accent2:#004eeb; --success:#067647; --warn:#b54708; --danger:#b42318;
+      --panel:#f9fafb; --shadow:0 8px 24px rgba(16,24,40,.08); --r:18px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .app{max-width:1120px;margin:0 auto;min-height:100vh}
+    .topbar{
+      position:sticky;top:0;z-index:10;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--line);
+      display:flex;gap:12px;align-items:center;justify-content:space-between;
+      padding:14px 18px;
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .logo{
+      width:38px;height:38px;border-radius:11px;
+      background:linear-gradient(135deg,#155eef,#7f56d9);
+      display:grid;place-items:center;color:#fff;font-weight:900
+    }
+    .subtitle{font-size:12px;color:var(--muted);font-weight:600}
+    .role-switch{
+      display:flex;background:#f2f4f7;border:1px solid var(--line);
+      padding:4px;border-radius:12px
+    }
+    .role-switch button{
+      border:0;background:transparent;padding:9px 13px;border-radius:9px;
+      color:#475467;font-weight:700
+    }
+    .role-switch button.active{
+      background:#fff;color:var(--text);
+      box-shadow:0 1px 3px rgba(16,24,40,.10)
+    }
+    .main{padding:20px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .card{
+      background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+      padding:18px;box-shadow:var(--shadow)
+    }
+    .hero{grid-column:span 12;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+    .hero h1{font-size:26px;margin:0 0 6px}
+    .hero p{margin:0;color:var(--muted);max-width:700px;line-height:1.45}
+    .pill{
+      font-size:12px;font-weight:800;padding:7px 10px;border-radius:999px;
+      background:#eef4ff;color:#3538cd;white-space:nowrap
+    }
+    .stat{grid-column:span 3}
+    .stat .num{font-size:28px;font-weight:850}
+    .stat .label{color:var(--muted);font-size:13px}
+    .section{grid-column:span 8}
+    .side{grid-column:span 4}
+    h2{font-size:18px;margin:0 0 14px}
+    h3{margin:0 0 6px;font-size:15px}
+    .task{
+      border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px;background:#fff
+    }
+    .task-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .meta{color:var(--muted);font-size:12px;line-height:1.45;margin-top:6px}
+    .badge{font-size:11px;font-weight:800;padding:6px 8px;border-radius:999px;white-space:nowrap}
+    .pending{background:#fff7ed;color:var(--warn)}
+    .progress{background:#eff8ff;color:#175cd3}
+    .done{background:#ecfdf3;color:var(--success)}
+    .btn{
+      border:0;background:var(--accent);color:#fff;font-weight:800;
+      padding:10px 13px;border-radius:11px
+    }
+    .btn:hover{background:var(--accent2)}
+    .btn.secondary{background:#fff;color:var(--text);border:1px solid var(--line)}
+    .btn.ghost{background:#f2f4f7;color:#344054}
+    .btn.small{padding:8px 10px;font-size:12px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .input, select, textarea{
+      width:100%;border:1px solid var(--line);border-radius:11px;
+      padding:11px 12px;background:#fff;color:var(--text);font-size:16px
+    }
+    textarea{min-height:92px;resize:vertical}
+    label{font-size:12px;color:#475467;font-weight:700;display:block;margin:10px 0 6px}
+    .module{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+    .module:last-child{border-bottom:0}
+    .locked{opacity:.55}
+    .footer-note{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.45}
+    .demo-note{
+      grid-column:span 12;background:#fff;border:1px dashed var(--line);border-radius:14px;
+      padding:14px;color:var(--muted);font-size:13px;line-height:1.45
+    }
+    .mobile-nav{
+      position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);
+      display:none;grid-template-columns:repeat(4,1fr);padding:8px
+    }
+    .mobile-nav button{
+      border:0;background:transparent;padding:9px 4px;color:#667085;font-size:11px;font-weight:700
+    }
+    .toast{
+      position:fixed;left:50%;bottom:86px;transform:translateX(-50%);
+      background:#101828;color:#fff;padding:10px 14px;border-radius:999px;
+      font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:50
+    }
+    .toast.show{opacity:1}
+    .create-box{
+      margin:10px 0 16px;padding:14px;background:var(--panel);border-radius:14px
+    }
+    .hidden{display:none!important}
+    @media(max-width:760px){
+      .main{padding:14px 14px 86px}
+      .hero{display:block}
+      .hero .pill{display:inline-block;margin-top:12px}
+      .stat{grid-column:span 6}
+      .section,.side{grid-column:span 12}
+      .topbar{padding:12px}
+      .brand .name{display:none}
+      .mobile-nav{display:grid}
+      .task-top{align-items:flex-start}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">C</div>
+      <div>
+        <div class="name">ControlPYME</div>
+        <div class="subtitle">MVP interactivo</div>
+      </div>
+    </div>
+    <div class="role-switch" aria-label="Cambiar interfaz">
+      <button id="bossBtn" class="active" type="button">Jefe</button>
+      <button id="empBtn" type="button">Empleado</button>
+    </div>
+  </header>
+
+  <main class="main" id="app"></main>
+
+  <nav class="mobile-nav" aria-label="Navegación móvil">
+    <button id="navInicio" type="button">Inicio</button>
+    <button id="navTareas" type="button">Tareas</button>
+    <button id="navModulos" type="button">Módulos</button>
+    <button id="navRol" type="button">Cambiar rol</button>
+  </nav>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const state = {
+    currentRole: 'boss',
+    company: 'Empresa Demo C.A.',
+    projects: [
+      {id:1,name:'Importación Cliente ABC',status:'En proceso',progress:65}
+    ],
+    tasks: [
+      {id:101,title:'Confirmar llegada de mercancía',project:'Importación Cliente ABC',assignee:'Carlos',due:'Hoy',priority:'Alta',status:'Pendiente',note:''},
+      {id:102,title:'Cargar acta de recepción',project:'Importación Cliente ABC',assignee:'Carlos',due:'Hoy',priority:'Media',status:'En proceso',note:'Mercancía en revisión'}
+    ],
+    activity: [
+      'María registró un pago en Importación Cliente ABC',
+      'Jurídico cargó Contrato de arrendamiento',
+      'Carlos inició la tarea “Cargar acta de recepción”'
+    ]
+  };
+
+  const app = document.getElementById('app');
+  const bossBtn = document.getElementById('bossBtn');
+  const empBtn = document.getElementById('empBtn');
+  const toastEl = document.getElementById('toast');
+
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    setTimeout(() => toastEl.classList.remove('show'), 1800);
+  }
+
+  function escapeHTML(str){
+    const d = document.createElement('div');
+    d.textContent = str ?? '';
+    return d.innerHTML;
+  }
+
+  function badgeClass(s){
+    return s === 'Completada' ? 'done' : s === 'En proceso' ? 'progress' : 'pending';
+  }
+
+  function stats(){
+    return {
+      projects: state.projects.length,
+      pending: state.tasks.filter(t => t.status !== 'Completada').length,
+      late: state.tasks.filter(t => t.status !== 'Completada' && t.due === 'Atrasada').length,
+      done: state.tasks.filter(t => t.status === 'Completada').length
+    };
+  }
+
+  function setRole(role){
+    state.currentRole = role;
+    bossBtn.classList.toggle('active', role === 'boss');
+    empBtn.classList.toggle('active', role === 'employee');
+    render();
+  }
+
+  function render(){
+    if(state.currentRole === 'boss') renderBoss();
+    else renderEmployee();
+  }
+
+  function taskBossHTML(t){
+    return `
+      <div class="task">
+        <div class="task-top">
+          <div>
+            <h3>${escapeHTML(t.title)}</h3>
+            <div class="meta">${escapeHTML(t.project)} · Responsable: ${escapeHTML(t.assignee)} · ${escapeHTML(t.due)} · Prioridad ${escapeHTML(t.priority)}</div>
+          </div>
+          <span class="badge ${badgeClass(t.status)}">${escapeHTML(t.status)}</span>
+        </div>
+        ${t.note ? `<div class="meta" style="margin-top:10px"><strong>Última actualización:</strong> ${escapeHTML(t.note)}</div>` : ''}
+      </div>`;
+  }
+
+  function renderBoss(){
+    const s = stats();
+    app.innerHTML = `
+      <div class="grid">
+        <section class="card hero">
+          <div>
+            <h1>${escapeHTML(state.company)}</h1>
+            <p>Panel del jefe: supervisa la operación, crea tareas y observa las actualizaciones del equipo desde un solo lugar.</p>
+          </div>
+          <span class="pill">MVP · Mobile-first</span>
+        </section>
+
+        <section class="card stat"><div class="num">${s.projects}</div><div class="label">Proyectos activos</div></section>
+        <section class="card stat"><div class="num">${s.pending}</div><div class="label">Tareas abiertas</div></section>
+        <section class="card stat"><div class="num">${s.done}</div><div class="label">Completadas</div></section>
+        <section class="card stat"><div class="num">${s.late}</div><div class="label">Atrasadas</div></section>
+
+        <section class="card section" id="tasks">
+          <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+            <div>
+              <h2 style="margin-bottom:2px">Tareas del equipo</h2>
+              <div class="meta">Crea una tarea y luego cambia a la interfaz del empleado.</div>
+            </div>
+            <button class="btn small" id="toggleCreate" type="button">+ Nueva tarea</button>
+          </div>
+
+          <form id="createBox" class="create-box hidden">
+            <label for="newTitle">Título</label>
+            <input id="newTitle" class="input" placeholder="Ej. Verificar documentos de aduana" maxlength="100" required>
+
+            <label for="newAssignee">Responsable</label>
+            <select id="newAssignee">
+              <option>Carlos</option>
+              <option>María</option>
+            </select>
+
+            <label for="newProject">Proyecto</label>
+            <input id="newProject" class="input" value="Importación Cliente ABC">
+
+            <label for="newPriority">Prioridad</label>
+            <select id="newPriority"><option>Alta</option><option>Media</option><option>Baja</option></select>
+
+            <div class="actions">
+              <button class="btn" type="submit">Crear y asignar</button>
+              <button class="btn secondary" id="cancelCreate" type="button">Cancelar</button>
+            </div>
+          </form>
+
+          ${state.tasks.map(taskBossHTML).join('')}
+        </section>
+
+        <aside class="card side">
+          <h2>Actividad reciente</h2>
+          ${state.activity.slice(0,5).map(a => `
+            <div class="module">
+              <div><h3>${escapeHTML(a)}</h3><div class="meta">Registrado en el sistema</div></div>
+            </div>`).join('')}
+        </aside>
+
+        <section class="card section" id="modules">
+          <h2>Módulos de la empresa</h2>
+          <div class="module">
+            <div><h3>Proyectos y tareas</h3><div class="meta">Activo en este MVP.</div></div>
+            <span class="badge done">Activo</span>
+          </div>
+          <div class="module">
+            <div><h3>Permisos VER / MODIFICAR</h3><div class="meta">El jefe controla qué puede consultar o editar cada usuario.</div></div>
+            <span class="badge done">Demo</span>
+          </div>
+          <div class="module locked">
+            <div><h3>Finanzas</h3><div class="meta">Bancos, cajas, cripto y pagos asociados a proyectos.</div></div>
+            <span class="badge">Próxima fase</span>
+          </div>
+          <div class="module locked">
+            <div><h3>Jurídico</h3><div class="meta">Contratos, permisos, títulos, vencimientos y documentos sensibles.</div></div>
+            <span class="badge">Próxima fase</span>
+          </div>
+        </section>
+
+        <aside class="card side">
+          <h2>Permisos de Carlos</h2>
+          <div class="module"><span>Tareas propias</span><strong>Ver ✓ · Modificar ✓</strong></div>
+          <div class="module"><span>Todos los proyectos</span><strong>Ver ✕ · Modificar ✕</strong></div>
+          <div class="module"><span>Finanzas</span><strong>Ver ✕ · Modificar ✕</strong></div>
+          <div class="module"><span>Jurídico</span><strong>Ver ✕ · Modificar ✕</strong></div>
+          <div class="footer-note">Esta sección demuestra el concepto de permisos granulares sin construir todavía todo el sistema de administración de usuarios.</div>
+        </aside>
+
+        <div class="demo-note">
+          <strong>Qué valida este MVP:</strong> creación y asignación de tareas, interfaces distintas por rol, actualización de avances por el empleado, supervisión por el jefe, trazabilidad básica y diseño pensado para teléfonos.
+        </div>
+      </div>`;
+
+    const toggle = document.getElementById('toggleCreate');
+    const box = document.getElementById('createBox');
+    const cancel = document.getElementById('cancelCreate');
+
+    toggle.addEventListener('click', () => box.classList.toggle('hidden'));
+    cancel.addEventListener('click', () => box.classList.add('hidden'));
+
+    box.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('newTitle').value.trim();
+      if(!title){ toast('Escribe un título'); return; }
+
+      const task = {
+        id: Date.now(),
+        title,
+        assignee: document.getElementById('newAssignee').value,
+        project: document.getElementById('newProject').value.trim() || 'General',
+        priority: document.getElementById('newPriority').value,
+        due: 'Hoy',
+        status: 'Pendiente',
+        note: ''
+      };
+
+      state.tasks.unshift(task);
+      state.activity.unshift(`Jefe asignó “${task.title}” a ${task.assignee}`);
+      render();
+      toast('Tarea creada');
+    });
+  }
+
+  function taskEmployeeHTML(t){
+    return `
+      <div class="task">
+        <div class="task-top">
+          <div>
+            <h3>${escapeHTML(t.title)}</h3>
+            <div class="meta">${escapeHTML(t.project)} · ${escapeHTML(t.due)} · Prioridad ${escapeHTML(t.priority)}</div>
+          </div>
+          <span class="badge ${badgeClass(t.status)}">${escapeHTML(t.status)}</span>
+        </div>
+
+        <label for="status-${t.id}">Estado</label>
+        <select id="status-${t.id}" data-status-id="${t.id}">
+          <option ${t.status==='Pendiente'?'selected':''}>Pendiente</option>
+          <option ${t.status==='En proceso'?'selected':''}>En proceso</option>
+          <option ${t.status==='Completada'?'selected':''}>Completada</option>
+        </select>
+
+        <label for="note-${t.id}">Registrar avance</label>
+        <textarea id="note-${t.id}" placeholder="Ej. Mercancía recibida: 498/500 unidades.">${escapeHTML(t.note)}</textarea>
+
+        <div class="actions">
+          <button class="btn" type="button" data-save-id="${t.id}">Guardar actualización</button>
+          <button class="btn ghost" type="button" data-photo-id="${t.id}">+ Simular foto</button>
+        </div>
+      </div>`;
+  }
+
+  function renderEmployee(){
+    const mine = state.tasks.filter(t => t.assignee === 'Carlos');
+
+    app.innerHTML = `
+      <div class="grid">
+        <section class="card hero">
+          <div>
+            <h1>Hola, Carlos</h1>
+            <p>Tu vista móvil muestra únicamente lo que necesitas para trabajar: tareas, prioridades y una forma rápida de registrar avances.</p>
+          </div>
+          <span class="pill">${mine.filter(t => t.status !== 'Completada').length} tareas abiertas</span>
+        </section>
+
+        <section class="card section" id="tasks">
+          <h2>Mis tareas</h2>
+          ${mine.map(taskEmployeeHTML).join('') || '<div class="footer-note">No tienes tareas asignadas.</div>'}
+        </section>
+
+        <aside class="card side">
+          <h2>Mi acceso</h2>
+          <div class="module"><span>Mis tareas</span><strong>Ver ✓ · Modificar ✓</strong></div>
+          <div class="module"><span>Finanzas</span><strong>Sin acceso</strong></div>
+          <div class="module"><span>Jurídico</span><strong>Sin acceso</strong></div>
+          <div class="footer-note">El empleado no ve información para la cual no tiene autorización.</div>
+        </aside>
+
+        <section class="card section" id="modules">
+          <h2>Lo que demuestra esta pantalla</h2>
+          <div class="module"><div><h3>Actualización rápida</h3><div class="meta">Cambiar estado y registrar una nota en segundos.</div></div></div>
+          <div class="module"><div><h3>Experiencia mobile-first</h3><div class="meta">Diseñada para usarse durante la operación, no solo desde una oficina.</div></div></div>
+          <div class="module"><div><h3>Información filtrada por permisos</h3><div class="meta">Carlos ve sus tareas, pero no finanzas ni jurídico.</div></div></div>
+        </section>
+
+        <div class="demo-note">
+          Prueba sugerida: cambia una tarea a <strong>Completada</strong>, agrega una nota y luego vuelve al perfil <strong>Jefe</strong> para ver el cambio reflejado.
+        </div>
+      </div>`;
+
+    document.querySelectorAll('[data-status-id]').forEach(sel => {
+      sel.addEventListener('change', (e) => {
+        const id = Number(e.target.dataset.statusId);
+        const t = state.tasks.find(x => x.id === id);
+        if(!t) return;
+        t.status = e.target.value;
+        state.activity.unshift(`Carlos cambió “${t.title}” a ${t.status}`);
+        render();
+        toast('Estado actualizado');
+      });
+    });
+
+    document.querySelectorAll('[data-save-id]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = Number(e.currentTarget.dataset.saveId);
+        const t = state.tasks.find(x => x.id === id);
+        if(!t) return;
+
+        const note = document.getElementById(`note-${id}`).value.trim();
+        t.note = note;
+        state.activity.unshift(`Carlos actualizó “${t.title}”${note ? ': ' + note : ''}`);
+        render();
+        toast('Avance guardado');
+      });
+    });
+
+    document.querySelectorAll('[data-photo-id]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = Number(e.currentTarget.dataset.photoId);
+        const t = state.tasks.find(x => x.id === id);
+        if(!t) return;
+        state.activity.unshift(`Carlos adjuntó una foto a “${t.title}”`);
+        toast('Foto simulada adjuntada');
+      });
+    });
+  }
+
+  bossBtn.addEventListener('click', () => setRole('boss'));
+  empBtn.addEventListener('click', () => setRole('employee'));
+
+  document.getElementById('navInicio').addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
+  document.getElementById('navTareas').addEventListener('click', () => document.getElementById('tasks')?.scrollIntoView({behavior:'smooth'}));
+  document.getElementById('navModulos').addEventListener('click', () => document.getElementById('modules')?.scrollIntoView({behavior:'smooth'}));
+  document.getElementById('navRol').addEventListener('click', () => setRole(state.currentRole === 'boss' ? 'employee' : 'boss'));
+
+  render();
+})();
+</script>
+</body>
+</html>
